@@ -1,0 +1,29 @@
+# ROS 2 Build Artifacts
+build/
+install/
+log/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Workspace artifacts
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# Simulation artifacts
+*.sdf.bak
+*.urdf.bak
+
+# Logs
+ros2_launch.log
+output.txt
+*.pdf
+*.gv
+
+# Documentation (handled as private repo)
+src/bakus_bot/docs/
