@@ -15,7 +15,7 @@ import xacro
 
 
 def generate_launch_description():
-    pkg_bakus = get_package_share_directory('bakus_bot')
+    pkg_fieldbot = get_package_share_directory('fieldbot')
     pkg_nav2 = get_package_share_directory('nav2_bringup')
     pkg_ros_gz = get_package_share_directory('ros_gz_sim')
 
@@ -23,9 +23,9 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     world = LaunchConfiguration('world')
 
-    urdf_file = os.path.join(pkg_bakus, 'urdf', 'bakus.urdf')
-    params_file = os.path.join(pkg_bakus, 'params', 'bakus_params.yaml')
-    rviz_config = os.path.join(pkg_bakus, 'rviz', 'bakus_bot.rviz')
+    urdf_file = os.path.join(pkg_fieldbot, 'urdf', 'fieldbot.urdf')
+    params_file = os.path.join(pkg_fieldbot, 'params', 'fieldbot_params.yaml')
+    rviz_config = os.path.join(pkg_fieldbot, 'rviz', 'fieldbot.rviz')
 
     # 1. PROCESS URDF
     doc = xacro.process_file(urdf_file)
@@ -39,7 +39,7 @@ def generate_launch_description():
 
     declare_world = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(pkg_bakus, 'worlds', 'empty.sdf'),
+        default_value=os.path.join(pkg_fieldbot, 'worlds', 'navigation_world.sdf'),
         description='Full path to Gazebo world file to load')
 
     # 2. START GAZEBO
@@ -54,7 +54,7 @@ def generate_launch_description():
     spawn_entity = Node(
         package='ros_gz_sim',
         executable='create',
-        arguments=['-topic', 'robot_description', '-name', 'bakus_robot', '-z', '0.5'],
+        arguments=['-topic', 'robot_description', '-name', 'field_robot', '-z', '0.5'],
         output='screen',
         parameters=[{'use_sim_time': use_sim_time}]
     )
@@ -74,12 +74,12 @@ def generate_launch_description():
         arguments=[
             '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
-            '/model/bakus_robot/pose@geometry_msgs/msg/PoseArray[gz.msgs.Pose_V',
+            '/model/field_robot/pose@geometry_msgs/msg/PoseArray[gz.msgs.Pose_V',
         ],
         output='screen',
         parameters=[{'use_sim_time': use_sim_time}],
         remappings=[
-            ('/model/bakus_robot/pose', '/gazebo_pose'),
+            ('/model/field_robot/pose', '/gazebo_pose'),
         ]
     )
 

@@ -1,6 +1,7 @@
-# Bakus Robot: Autonomous Navigation in ROS 2 Jazzy
+# FieldBot: Autonomous Farm Navigation Stack
+in ROS 2 Jazzy
 
-Welcome to the **Bakus Robot** project. This repository contains the complete software stack for a differential drive robot utilizing **Nav2**, **SLAM Toolbox**, and **Gazebo Harmonic**.
+Welcome to the **FieldBot Robot** project. This repository contains the complete software stack for a differential drive robot utilizing **Nav2**, **SLAM Toolbox**, and **Gazebo Harmonic**.
 
 The project is designed with a professional, modular architecture, adhering to Senior-level ROS 2 development standards including event-driven launch sequences and safety-critical monitoring loops.
 
@@ -28,9 +29,9 @@ The project is designed with a professional, modular architecture, adhering to S
 ## 📂 Project Structure
 
 ```text
-bakus_ws/
+fieldbot_ws/
 ├── src/
-│   └── bakus_bot/
+│   └── fieldbot/
 │       ├── docs/        # Formal technical documentation
 │       ├── launch/      # Deterministic launch sequences
 │       ├── params/      # Nav2 and SLAM configurations
@@ -48,26 +49,29 @@ Ensure you have ROS 2 Jazzy and Gazebo Harmonic installed.
 
 ### 2. Build the Workspace
 ```bash
-cd bakus_ws
+cd fieldbot_ws
 colcon build --symlink-install
 source install/setup.bash
 ```
 
 ### 3. Launch Simulation & Navigation
 ```bash
-ros2 launch bakus_bot bakus_bot_launch.py
+ros2 launch fieldbot fieldbot_launch.py
 ```
 
 ---
 
 ## 📖 Documentation
-Detailed technical specifications are available in the [docs](./src/bakus_bot/docs/) directory:
-- [System Topology](./src/bakus_bot/docs/topology.md)
-- [Data Pipeline](./src/bakus_bot/docs/data_flow.md)
-- [Navigation Tuning](./src/bakus_bot/docs/tuning_guide.md)
-- [Launch Architecture](./src/bakus_bot/docs/launch_architecture.md)
+Detailed technical specifications are available in the [docs](./src/fieldbot/docs/) directory:
+- [System Topology](./src/fieldbot/docs/topology.md)
+- [Data Pipeline](./src/fieldbot/docs/data_flow.md)
+- [Navigation Tuning](./src/fieldbot/docs/tuning_guide.md)
+- [Launch Architecture](./src/fieldbot/docs/launch_architecture.md)
 
 ---
 
 ## 🛡️ License
 This project is licensed under the Apache 2.0 License.
+
+---
+**🔗 Repository**: [https://github.com/ilyessaadna10/FieldBot.git](https://github.com/ilyessaadna10/FieldBot.git)

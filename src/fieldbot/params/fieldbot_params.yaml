@@ -1,4 +1,4 @@
-# Bakus Robot Navigation Parameters
+# FieldBot Robot Navigation Parameters
 # Configuration for Nav2, SLAM Toolbox, and Hardware Controllers
 
 amcl:

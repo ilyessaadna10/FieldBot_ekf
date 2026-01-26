@@ -1,9 +1,9 @@
-# Bakus Bot Package
+# FieldBot Bot Package
 
-This package contains the core ROS 2 Jazzy implementation for the Bakus Farm Robot simulation.
+This package contains the core ROS 2 Jazzy implementation for the FieldBot Farm Robot simulation.
 
 ## Overview
-`bakus_bot` integrates Gazebo Harmonic with the Nav2 stack to provide a robust navigation and SLAM simulation environment.
+`fieldbot` integrates Gazebo Harmonic with the Nav2 stack to provide a robust navigation and SLAM simulation environment.
 
 ## 📂 Subdirectories
 -   **`config/`**: ROS 2 controller configurations.
@@ -19,9 +19,9 @@ This package contains the core ROS 2 Jazzy implementation for the Bakus Farm Rob
 ## 🛠 Building & Running
 From your workspace root:
 ```bash
-colcon build --packages-select bakus_bot
+colcon build --packages-select fieldbot
 source install/setup.bash
-ros2 launch bakus_bot bakus_bot_launch.py
+ros2 launch fieldbot fieldbot_launch.py
 ```
 
 ## 🚀 Key Features

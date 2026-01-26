@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="bakus_bot">
+<robot name="fieldbot">
 
   <!-- =================================================================================== -->
   <!--    COLOR DEFINITIONS                                                                -->
@@ -187,7 +187,7 @@
   <!-- ROS2 CONTROL -->
   <gazebo>
     <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-      <parameters>$(find bakus_bot)/config/ros2_controllers.yaml</parameters>
+      <parameters>$(find fieldbot)/config/ros2_controllers.yaml</parameters>
     </plugin>
   </gazebo>
 

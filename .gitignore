@@ -26,4 +26,4 @@ output.txt
 *.gv
 
 # Documentation (handled as private repo)
-src/bakus_bot/docs/
+src/fieldbot/docs/
