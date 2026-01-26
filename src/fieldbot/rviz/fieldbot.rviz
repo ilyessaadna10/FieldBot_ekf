@@ -115,6 +115,26 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /local_plan
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Name: Camera RGB
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /camera/image_raw
+    - Class: rviz_default_plugins/PointCloud2
+      Enabled: true
+      Name: Camera PointCloud
+      Queue Size: 10
+      Size (Pixels): 2
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /camera/points
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

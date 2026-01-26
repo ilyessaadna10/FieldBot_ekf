@@ -75,11 +75,19 @@ def generate_launch_description():
             '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
             '/model/field_robot/pose@geometry_msgs/msg/PoseArray[gz.msgs.Pose_V',
+            '/camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
+            '/camera/depth_image@sensor_msgs/msg/Image@gz.msgs.Image',
+            '/camera/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo',
+            '/camera/points@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked',
         ],
         output='screen',
         parameters=[{'use_sim_time': use_sim_time}],
         remappings=[
             ('/model/field_robot/pose', '/gazebo_pose'),
+            ('/camera/image', '/camera/image_raw'),
+            ('/camera/depth_image', '/camera/depth'),
+            ('/camera/camera_info', '/camera/camera_info'),
+            ('/camera/points', '/camera/points'),
         ]
     )
 
