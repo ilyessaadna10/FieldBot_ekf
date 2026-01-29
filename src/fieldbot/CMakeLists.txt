@@ -18,7 +18,15 @@ install(DIRECTORY
   config   # Added this for ros2_control
   maps     # Added this for future map saving
   rviz     # Custom RViz configs
+  scripts  # Python nodes/scripts
   DESTINATION share/${PROJECT_NAME}
+)
+
+# Install Python scripts as executables
+install(PROGRAMS
+  scripts/gap_detector.py
+  scripts/row_surveyor.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

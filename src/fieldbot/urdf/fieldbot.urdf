@@ -175,6 +175,22 @@
     <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
   </joint>
 
+  <!-- IMU LINK -->
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+  </joint>
+
+  <!-- GPS LINK -->
+  <link name="gps_link"/>
+  <joint name="gps_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="gps_link"/>
+    <origin xyz="0 0 0.4" rpy="0 0 0"/>
+  </joint>
+
   <!-- =================================================================================== -->
   <!--    ROS2 CONTROL (The ONLY motor controller now)                                     -->
   <!-- =================================================================================== -->
@@ -264,6 +280,27 @@
           <far>10.0</far>
         </clip>
       </camera>
+    </sensor>
+  </gazebo>
+
+  <!-- IMU SENSOR -->
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>1</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>imu</topic>
+      <gz_frame_id>imu_link</gz_frame_id>
+    </sensor>
+  </gazebo>
+
+  <!-- GPS SENSOR -->
+  <gazebo reference="gps_link">
+    <sensor name="navsat_sensor" type="navsat">
+      <always_on>1</always_on>
+      <update_rate>10</update_rate>
+      <topic>gps/fix</topic>
+      <gz_frame_id>gps_link</gz_frame_id>
     </sensor>
   </gazebo>
 

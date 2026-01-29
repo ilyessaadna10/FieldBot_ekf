@@ -1,42 +1,86 @@
-# FieldBot: Autonomous Farm Navigation Stack
-in ROS 2 Jazzy
+# FieldBot: Autonomous Agricultural Navigation Stack
 
-Welcome to the **FieldBot Robot** project. This repository contains the complete software stack for a differential drive robot utilizing **Nav2**, **SLAM Toolbox**, and **Gazebo Harmonic**.
+**Professional-grade ROS 2 Jazzy implementation for outdoor autonomous mobile robots, featuring GPS/IMU/EKF sensor fusion and agricultural field navigation.**
 
-The project is designed with a professional, modular architecture, adhering to Senior-level ROS 2 development standards including event-driven launch sequences and safety-critical monitoring loops.
+FieldBot is designed for real-world agricultural environments with GPS-based global localization, 3D perception, and deterministic event-driven architecture. This project demonstrates senior-level ROS 2 development practices including sensor fusion, hardware abstraction, and outdoor navigation.
 
 ---
 
-## 🚀 Features
+## 🌟 Key Features
 
--   **Autonomous Navigation**: Full Nav2 stack integration using the Regulated Pure Pursuit (RPP) controller.
--   **Dynamic Mapping**: Synchronous SLAM utilizing `slam_toolbox` for real-time environment discovery.
--   **Simulation Ready**: High-fidelity simulation in **Gazebo Harmonic** with GPU-accelerated Lidar (optimized at 30Hz).
--   **Safety First**: Dedicated `collision_monitor` node acting as a low-latency safety reflex layer.
--   **Deterministic Launch**: Event-driven node initialization (using `RegisterEventHandler`) to ensure reliable synchronization between Gazebo and ROS 2.
+### 🛰️ GPS/IMU/EKF Sensor Fusion
+- **Dual-EKF Localization**: Separate local and global EKF filters for smooth navigation
+- **Global Positioning**: GPS-based absolute positioning for outdoor agricultural environments
+- **Multi-Sensor Fusion**: Combines wheel odometry, IMU orientation, and GPS coordinates
+- **No Drift Navigation**: Eliminates long-term position drift common in wheel-only odometry
+- **Frame Architecture**: `map → utm → odom → base_footprint` transform tree
+
+> [!NOTE]
+> This project uses **GPS/IMU/EKF sensor fusion** for localization, **NOT SLAM or AMCL**. It provides absolute global outdoor positioning suitable for agricultural field operations.
+
+### 📷 RGB-D 3D Perception
+- **Depth Sensing**: Simulated RGB-D camera with point cloud generation
+- **Corrected Optical Frames**: Proper REP-103 coordinate system compliance
+- **Multiple Data Streams**:
+  - `/camera/image_raw` - RGB images (rgb8 encoding)
+  - `/camera/depth` - Depth maps (32FC1)
+  - `/camera/points` - 3D point clouds (PointCloud2)
+- **Memory-Aligned Encoding**: Fixed byte alignment for clean visual data
+
+### 🧭 Autonomous Navigation
+- **Nav2 Integration**: Full path planning and navigation stack
+- **Path Planning Algorithms**: Dijkstra/A* for global planning
+- **Controller**: Regulated Pure Pursuit (RPP) for trajectory following
+- **Safety**: Dedicated collision monitor node for real-time obstacle avoidance
+- **Differential Drive**: Professional `ros2_control` integration
+
+### 🚜 Agricultural Intelligence
+- **Row Surveyor**: GPS waypoint recording service for field mapping
+  - Services: `/mark_start`, `/mark_end`, `/mark_fence`
+  - Records semantic field positions to YAML
+  - Uses `/odometry/global` for accurate GPS-based positions
+- **Field Mapping**: Build reusable field maps with labeled waypoints
+
+### ⚙️ Professional Architecture
+- **Event-Driven Launch**: `RegisterEventHandler` for deterministic node startup
+- **Hardware Abstraction**: `ros2_control` enables seamless sim-to-real transfer
+- **Simulation Ready**: High-fidelity Gazebo Harmonic with GPU-accelerated sensors
+- **DDS Middleware**: Fast-DDS for peer-to-peer communication
+- **Dual Simulation Worlds**: Navigation test environment and agricultural vineyard
 
 ---
 
 ## 🛠️ Tech Stack
 
--   **OS**: Ubuntu 24.04 (Noble)
--   **ROS 2**: Jazzy Jalisco
--   **Simulator**: Gazebo Harmonic
--   **Hardware Control**: `ros2_control` via `gz_ros2_control` plugin.
+| Component | Technology |
+|-----------|-----------|
+| **OS** | Ubuntu 24.04 (Noble) |
+| **ROS** | ROS 2 Jazzy Jalisco |
+| **Simulator** | Gazebo Harmonic |
+| **Navigation** | Nav2 (Regulated Pure Pursuit) |
+| **Localization** | `robot_localization` (Dual-EKF) |
+| **Control** | `ros2_control` + `gz_ros2_control` |
+| **Middleware** | Fast-DDS |
+| **Sensors** | LiDAR (30Hz), RGB-D Camera, GPS, IMU |
 
 ---
 
 ## 📂 Project Structure
 
-```text
-fieldbot_ws/
+```
+bakus_ws/
 ├── src/
 │   └── fieldbot/
-│       ├── docs/        # Formal technical documentation
-│       ├── launch/      # Deterministic launch sequences
-│       ├── params/      # Nav2 and SLAM configurations
-│       ├── urdf/        # Robot modeling and physical links
-│       └── worlds/      # Simulation environments
+│       ├── config/          # ros2_control configuration
+│       ├── docs/            # Technical deep-dive documentation
+│       ├── launch/          # Event-driven launch sequences
+│       ├── params/          # Nav2, EKF, and sensor parameters
+│       ├── rviz/            # Visualization configurations
+│       ├── scripts/         # Agricultural utilities (row_surveyor)
+│       ├── urdf/            # Robot description with sensors
+│       └── worlds/          # Gazebo simulation environments
+├── build/
+├── install/
 └── README.md
 ```
 
@@ -44,34 +88,139 @@ fieldbot_ws/
 
 ## ⚡ Quick Start
 
-### 1. Requirements
-Ensure you have ROS 2 Jazzy and Gazebo Harmonic installed.
+### Prerequisites
 
-### 2. Build the Workspace
+Ensure you have the following installed:
+- **Ubuntu 24.04** (Noble Numbat)
+- **ROS 2 Jazzy Jalisco**
+- **Gazebo Harmonic**
+
+### Installation
+
 ```bash
-cd fieldbot_ws
-colcon build --symlink-install
+# Clone the repository
+cd ~/ros2_ws/src
+git clone https://github.com/ilyessaadna10/FieldBot.git fieldbot
+
+# Install dependencies
+cd ~/ros2_ws
+rosdep install --from-paths src --ignore-src -r -y
+
+# Build the workspace
+colcon build --symlink-install --packages-select fieldbot
 source install/setup.bash
 ```
 
-### 3. Launch Simulation & Navigation
+### Run the Full Stack
+
+Launch the complete system (Gazebo + Robot + Sensors + Nav2 + EKF):
+
 ```bash
 ros2 launch fieldbot fieldbot_launch.py
+```
+
+This single command starts:
+- ✅ Gazebo Harmonic physics simulation
+- ✅ Robot spawning and state publisher
+- ✅ Sensor bridges (LiDAR, Camera, GPS, IMU)
+- ✅ Dual-EKF localization (local + global)
+- ✅ Nav2 navigation stack
+- ✅ RViz visualization
+
+### Set Navigation Goals
+
+1. **Wait for RViz to open** (automatically launches)
+2. **Click "2D Goal Pose"** in the top toolbar
+3. **Click and drag** on the map to set target position and heading
+4. **Watch the robot navigate** autonomously!
+
+### Optional: Change Simulation World
+
+```bash
+# Launch with navigation test world (default)
+ros2 launch fieldbot fieldbot_launch.py
+
+# Launch with agricultural vineyard world
+ros2 launch fieldbot fieldbot_launch.py world:=$(ros2 pkg prefix fieldbot)/share/fieldbot/worlds/vineyard_variable.sdf
+```
+
+---
+
+## 🗺️ Agricultural Field Mapping
+
+Use the **Row Surveyor** to record GPS waypoints while manually driving through your field:
+
+```bash
+# Start the system with GPS localization active
+ros2 launch fieldbot fieldbot_launch.py
+
+# In separate terminals, mark waypoints:
+ros2 service call /mark_start std_srvs/srv/Trigger  # Start of row
+ros2 service call /mark_end std_srvs/srv/Trigger    # End of row
+ros2 service call /mark_fence std_srvs/srv/Trigger  # Field boundary
+
+# Waypoints are saved to: field_map.yaml
 ```
 
 ---
 
 ## 📖 Documentation
-Detailed technical specifications are available in the [docs](./src/fieldbot/docs/) directory:
-- [System Topology](./src/fieldbot/docs/topology.md)
-- [Data Pipeline](./src/fieldbot/docs/data_flow.md)
-- [Navigation Tuning](./src/fieldbot/docs/tuning_guide.md)
-- [Launch Architecture](./src/fieldbot/docs/launch_architecture.md)
+
+Comprehensive technical documentation is available in [`src/fieldbot/docs/`](./src/fieldbot/docs/):
+
+| Document | Description |
+|----------|-------------|
+| [GPS/IMU/EKF Integration](./src/fieldbot/docs/gps_imu_ekf_integration.md) | Complete guide to dual-EKF sensor fusion system |
+| [Perception & Mechanics](./src/fieldbot/docs/perception_and_mechanics.md) | RGB-D camera integration and URDF specifications |
+| [Launch Architecture](./src/fieldbot/docs/launch_architecture.md) | Event-driven deterministic startup system |
+| [Advanced Roadmap](./src/fieldbot/docs/advanced_roadmap.md) | Future AI perception and coverage planning features |
+
+---
+
+## 🧪 Coordinate Systems (REP-103)
+
+The system follows ROS 2 spatial standards:
+
+- **Base Frame** (`base_link`): Forward: +X, Left: +Y, Up: +Z
+- **Optical Frame** (`camera_link`): Into Lens: +Z, Right: +X, Down: +Y
+- **Global Frame** (`map`): ENU (East-North-Up) aligned with GPS coordinates
+
+---
+
+## 🔧 Configuration
+
+Key configuration files:
+
+- **Navigation**: [`params/fieldbot_params.yaml`](./src/fieldbot/params/fieldbot_params.yaml)
+- **Localization**: [`params/ekf.yaml`](./src/fieldbot/params/ekf.yaml)
+- **Control**: [`config/ros2_controllers.yaml`](./src/fieldbot/config/ros2_controllers.yaml)
+- **Visualization**: [`rviz/fieldbot.rviz`](./src/fieldbot/rviz/fieldbot.rviz)
+
+---
+
+## 🚧 Status & Future Roadmap
+
+**Current Status**: ✅ Fully functional GPS-based outdoor navigation system
+
+**Planned Enhancements**:
+- 🔮 AI-powered weed detection with YOLO
+- 🔮 Coverage path planning for field operations
+- 🔮 Real hardware deployment on physical robot
+- 🔮 Multi-robot coordination for large fields
 
 ---
 
 ## 🛡️ License
-This project is licensed under the Apache 2.0 License.
+
+This project is licensed under the **Apache 2.0 License**.
 
 ---
-**🔗 Repository**: [https://github.com/ilyessaadna10/FieldBot.git](https://github.com/ilyessaadna10/FieldBot.git)
+
+## 🔗 Links
+
+- **Repository**: [https://github.com/ilyessaadna10/FieldBot.git](https://github.com/ilyessaadna10/FieldBot.git)
+- **Maintainer**: ilyaes (saadna.ilyes.dev@gmail.com)
+
+---
+
+*Developed as a professional demonstration of Advanced ROS 2 Robotics for agricultural applications.*

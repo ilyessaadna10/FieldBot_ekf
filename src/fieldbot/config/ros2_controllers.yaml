@@ -24,7 +24,7 @@ diff_drive_base_controller:
     # ros2_control will now publish the odom TF for us!
     base_frame_id: base_footprint
     odom_frame_id: odom
-    enable_odom_tf: true
+    enable_odom_tf: false
     
     # RELAX TIMEOUT: Handle lag better
     cmd_vel_timeout: 1.0

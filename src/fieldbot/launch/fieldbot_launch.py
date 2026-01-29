@@ -39,7 +39,7 @@ def generate_launch_description():
 
     declare_world = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(pkg_fieldbot, 'worlds', 'navigation_world.sdf'),
+        default_value=os.path.join(pkg_fieldbot, 'worlds', 'vineyard_variable.sdf'),
         description='Full path to Gazebo world file to load')
 
     # 2. START GAZEBO
@@ -79,6 +79,8 @@ def generate_launch_description():
             '/camera/depth_image@sensor_msgs/msg/Image@gz.msgs.Image',
             '/camera/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo',
             '/camera/points@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked',
+            '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+            '/gps/fix@sensor_msgs/msg/NavSatFix[gz.msgs.NavSat',
         ],
         output='screen',
         parameters=[{'use_sim_time': use_sim_time}],
@@ -91,7 +93,36 @@ def generate_launch_description():
         ]
     )
 
-    # 6. SPAWN CONTROLLERS
+    # 6. LOCALIZATION (EKF)
+    ekf_local = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node_odom',
+        output='screen',
+        parameters=[os.path.join(pkg_fieldbot, 'params', 'ekf.yaml'), {'use_sim_time': use_sim_time}]
+    )
+
+    ekf_global = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node_map',
+        output='screen',
+        parameters=[os.path.join(pkg_fieldbot, 'params', 'ekf.yaml'), {'use_sim_time': use_sim_time}],
+        remappings=[('/odometry/filtered', '/odometry/global')]
+    )
+
+    navsat_transform = Node(
+        package='robot_localization',
+        executable='navsat_transform_node',
+        name='navsat_transform',
+        output='screen',
+        parameters=[os.path.join(pkg_fieldbot, 'params', 'ekf.yaml'), {'use_sim_time': use_sim_time}],
+        remappings=[('/gps/fix', '/gps/fix'),
+                    ('/imu', '/imu'),
+                    ('/odometry/filtered', '/odometry/filtered')]
+    )
+
+    # 7. SPAWN CONTROLLERS
     joint_state_broadcaster = Node(
         package='controller_manager',
         executable='spawner',
@@ -110,12 +141,11 @@ def generate_launch_description():
     # Triggered after the diff_drive controller process starts
     nav2_bringup = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_nav2, 'launch', 'bringup_launch.py')
+            os.path.join(pkg_nav2, 'launch', 'navigation_launch.py')
         ),
         launch_arguments={
             'params_file': params_file,
             'use_sim_time': use_sim_time,
-            'slam': 'True',
             'use_composition': 'False',
             'use_respawn': 'False',
             'autostart': 'True',
@@ -148,11 +178,11 @@ def generate_launch_description():
         )
     )
 
-    # Start Nav2 only after the base controller is ready
+    # Nav2 will start after global localization is ready
     load_nav2 = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=diff_drive_spawner,
-            on_exit=[nav2_bringup],
+        event_handler=OnProcessStart(
+            target_action=ekf_global,
+            on_start=[nav2_bringup],
         )
     )
 
@@ -164,6 +194,15 @@ def generate_launch_description():
         )
     )
 
+    # Static transform: map -> utm (identity)
+    # navsat_transform publishes utm->odom, but Nav2 expects map frame
+    map_to_utm_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        arguments=['0', '0', '0', '0', '0', '0', 'map', 'utm'],
+        parameters=[{'use_sim_time': use_sim_time}]
+    )
+
     return LaunchDescription([
         declare_use_sim_time,
         declare_world,
@@ -172,9 +211,15 @@ def generate_launch_description():
         robot_state_publisher,
         spawn_entity,
         bridge,
+        
+        ekf_local,
+        ekf_global,
+        navsat_transform,
+        map_to_utm_tf,
 
         load_joint_state,
         load_diff_drive,
         load_nav2,
         load_rviz,
     ])
+
