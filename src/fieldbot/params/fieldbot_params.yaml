@@ -92,7 +92,7 @@ controller_server:
       min_lookahead_dist: 0.3
       max_lookahead_dist: 0.9
       lookahead_time: 1.5
-      rotate_to_heading_angular_vel: 1.0
+      rotate_to_heading_angular_vel: 3.0
       transform_tolerance: 0.5
       use_velocity_scaled_lookahead_dist: false
       min_approach_linear_velocity: 0.05
@@ -107,7 +107,7 @@ controller_server:
       regulated_linear_scaling_min_radius: 0.9
       regulated_linear_scaling_min_speed: 0.25
       rotate_to_heading_min_angle: 0.785
-      max_angular_accel: 3.2
+      max_angular_accel: 5.0
       cost_scaling_dist: 0.3
       cost_scaling_factor: 3.0
       inflation_cost_scaling_factor: 3.0
@@ -251,9 +251,9 @@ behavior_server:
     spin:
       plugin: "nav2_behaviors::Spin"
       simulate_ahead_time: 2.0
-      max_rotational_vel: 0.8
+      max_rotational_vel: 3.0
       min_rotational_vel: 0.3
-      rotational_acc_lim: 2.0
+      rotational_acc_lim: 5.0
     
     backup:
       plugin: "nav2_behaviors::BackUp"
@@ -312,10 +312,10 @@ velocity_smoother:
     enable_stamped_cmd_vel: true
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [0.8, 0.0, 1.2]
-    min_velocity: [-0.8, 0.0, -1.2]
-    max_accel: [2.5, 0.0, 3.2]
-    max_decel: [-2.5, 0.0, -3.2]
+    max_velocity: [0.8, 0.0, 3.0]
+    min_velocity: [-0.8, 0.0, -3.0]
+    max_accel: [2.5, 0.0, 5.0]
+    max_decel: [-2.5, 0.0, -5.0]
     odom_topic: "/odometry/filtered"
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]

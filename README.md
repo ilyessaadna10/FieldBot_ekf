@@ -35,11 +35,13 @@ FieldBot is designed for real-world agricultural environments with GPS-based glo
 - **Differential Drive**: Professional `ros2_control` integration
 
 ### 🚜 Agricultural Intelligence
-- **Row Surveyor**: GPS waypoint recording service for field mapping
-  - Services: `/mark_start`, `/mark_end`, `/mark_fence`
-  - Records semantic field positions to YAML
-  - Uses `/odometry/global` for accurate GPS-based positions
-- **Field Mapping**: Build reusable field maps with labeled waypoints
+- **Vineyard Surveyor GUI**: A professional Tkinter interface for field mapping and mission control.
+- **Hierarchical Mapping**: GPS waypoint recording with row semantic structure.
+  - Services: `/start_row`, `/end_row`, `/mark_tree_left`, `/mark_tree_right`, `/mark_fence`
+  - Records semantic field positions to YAML.
+  - Supports **Multi-Map Management** (append/create/load specific files).
+- **Hugging Navigation Pattern**: Deterministic traversal that "hugs" tree lines with perspective awareness.
+- **Virtual Bumper**: LiDAR-based safety system enforcing a strict **20cm safety margin**.
 
 ### ⚙️ Professional Architecture
 - **Event-Driven Launch**: `RegisterEventHandler` for deterministic node startup
@@ -111,38 +113,23 @@ colcon build --symlink-install --packages-select fieldbot
 source install/setup.bash
 ```
 
-### Run the Full Stack
-
-Launch the complete system (Gazebo + Robot + Sensors + Nav2 + EKF):
-
-```bash
-ros2 launch fieldbot fieldbot_launch.py
-```
-
-This single command starts:
-- ✅ Gazebo Harmonic physics simulation
-- ✅ Robot spawning and state publisher
-- ✅ Sensor bridges (LiDAR, Camera, GPS, IMU)
-- ✅ Dual-EKF localization (local + global)
-- ✅ Nav2 navigation stack
-- ✅ RViz visualization
-
-### Set Navigation Goals
-
-1. **Wait for RViz to open** (automatically launches)
-2. **Click "2D Goal Pose"** in the top toolbar
-3. **Click and drag** on the map to set target position and heading
-4. **Watch the robot navigate** autonomously!
-
-### Optional: Change Simulation World
+### Step 3: Run the Mission Stack
+In a second terminal, launch the agricultural mission services and the GUI:
 
 ```bash
-# Launch with navigation test world (default)
-ros2 launch fieldbot fieldbot_launch.py
-
-# Launch with agricultural vineyard world
-ros2 launch fieldbot fieldbot_launch.py world:=$(ros2 pkg prefix fieldbot)/share/fieldbot/worlds/vineyard_variable.sdf
+ros2 launch fieldbot mission.launch.py
 ```
+
+This command starts:
+- ✅ **Row Surveyor**: Service-based mapping logic.
+- ✅ **Tree Navigator**: Autonomous GPS waypoint follower.
+- ✅ **Surveyor GUI**: Graphical interface for mapping and control.
+
+### Step 4: Map & Navigate
+1. Use the **Surveying GUI** to start a new row.
+2. Mark trees as you pass them.
+3. Click **"End Row & Save"** to write to YAML.
+4. Click **"START AUTONOMOUS MISSION"** to begin the "hugging" traversal.
 
 ---
 
@@ -170,10 +157,10 @@ Comprehensive technical documentation is available in [`src/fieldbot/docs/`](./s
 
 | Document | Description |
 |----------|-------------|
-| [GPS/IMU/EKF Integration](./src/fieldbot/docs/gps_imu_ekf_integration.md) | Complete guide to dual-EKF sensor fusion system |
+| [Detailed System Architecture](./src/fieldbot/docs/system_architecture_detailed.md) | **Exhaustive guide to the current GPS/GUI mission system** |
+| [GPS/IMU/EKF Integration](./src/fieldbot/docs/gps_imu_ekf_integration.md) | Guide to dual-EKF sensor fusion core |
 | [Perception & Mechanics](./src/fieldbot/docs/perception_and_mechanics.md) | RGB-D camera integration and URDF specifications |
 | [Launch Architecture](./src/fieldbot/docs/launch_architecture.md) | Event-driven deterministic startup system |
-| [Advanced Roadmap](./src/fieldbot/docs/advanced_roadmap.md) | Future AI perception and coverage planning features |
 
 ---
 

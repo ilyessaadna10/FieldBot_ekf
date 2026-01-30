@@ -26,6 +26,8 @@ install(DIRECTORY
 install(PROGRAMS
   scripts/gap_detector.py
   scripts/row_surveyor.py
+  scripts/tree_navigator.py
+  scripts/survey_gui.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

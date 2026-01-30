@@ -19,63 +19,129 @@ class RowSurveyor(Node):
         )
         self.current_pose = None
         
-        # Services for semantic tagging
-        self.srv_start = self.create_service(Trigger, 'mark_start', self.mark_start_callback)
-        self.srv_end = self.create_service(Trigger, 'mark_end', self.mark_end_callback)
-        self.srv_fence = self.create_service(Trigger, 'mark_fence', self.mark_fence_callback)
+        # State management for hierarchical mapping
+        self.active_row = None
         
-        self.map_file = 'field_map.yaml'
-        self.get_logger().info(f'Row Surveyor ready. Services: /mark_start, /mark_end, /mark_fence -> {self.map_file}')
+        # Services for hierarchical tagging
+        self.srv_start_row = self.create_service(Trigger, 'start_row', self.start_row_callback)
+        self.srv_end_row = self.create_service(Trigger, 'end_row', self.end_row_callback)
+        self.srv_mark_tree_right = self.create_service(Trigger, 'mark_tree_right', self.mark_tree_right_callback)
+        self.srv_mark_tree_left = self.create_service(Trigger, 'mark_tree_left', self.mark_tree_left_callback)
+        self.srv_mark_fence = self.create_service(Trigger, 'mark_fence', self.mark_fence_callback)
+        
+        self.declare_parameter('map_file', 'field_map.yaml')
+        
+        self.get_logger().info(f'Hierarchical Row Surveyor ready.')
+        self.get_logger().info(f'Services: /start_row, /end_row, /mark_tree_right, /mark_tree_left, /mark_fence')
 
     def odom_callback(self, msg):
         self.current_pose = msg.pose.pose
 
-    def mark_start_callback(self, request, response):
-        return self.save_pose('row_start', response)
+    def get_map_path(self):
+        # Dynamically read parameter to allow GUI/User to change it
+        return self.get_parameter('map_file').value
 
-    def mark_end_callback(self, request, response):
-        return self.save_pose('row_end', response)
-
-    def mark_fence_callback(self, request, response):
-        return self.save_pose('fence', response)
-
-    def save_pose(self, tag, response):
-        if self.current_pose is None:
+    def start_row_callback(self, request, response):
+        self.map_file = self.get_map_path()
+        if self.active_row is not None:
             response.success = False
-            response.message = "No odometry received yet."
+            response.message = f"Row already in progress. End it first."
             return response
             
-        x = self.current_pose.position.x
-        y = self.current_pose.position.y
-        
-        self.get_logger().info(f"Recording {tag}: x={x:.2f}, y={y:.2f}")
-        
-        # Append to YAML file with semantic tag
-        data = {
-            'x': float(x),
-            'y': float(y),
-            'type': tag
+        if self.current_pose is None:
+            response.success = False
+            response.message = "No odometry."
+            return response
+
+        self.active_row = {
+            'start': {'x': float(self.current_pose.position.x), 'y': float(self.current_pose.position.y)},
+            'end': None,
+            'trees_right': [],
+            'trees_left': []
         }
+        response.success = True
+        response.message = "Started new row. Mark trees_right, trees_left or end row when done."
+        return response
+
+    def end_row_callback(self, request, response):
+        if self.active_row is None:
+            response.success = False
+            response.message = "No active row to end."
+            return response
+            
+        if self.current_pose is None:
+            response.success = False
+            response.message = "No odometry."
+            return response
+
+        self.active_row['end'] = {'x': float(self.current_pose.position.x), 'y': float(self.current_pose.position.y)}
         
-        # Read existing or create new
-        existing_data = []
+        # Save the completed row
+        data = self.load_map()
+        if 'rows' not in data: data['rows'] = []
+        data['rows'].append(self.active_row)
+        self.save_map(data)
+        
+        self.active_row = None
+        response.success = True
+        response.message = f"Saved row #{len(data['rows'])}."
+        return response
+
+    def mark_tree_right_callback(self, request, response):
+        return self._mark_tree('trees_right', response)
+
+    def mark_tree_left_callback(self, request, response):
+        return self._mark_tree('trees_left', response)
+
+    def _mark_tree(self, side, response):
+        if self.active_row is None:
+            response.success = False
+            response.message = "Must start a row before marking trees."
+            return response
+            
+        if self.current_pose is None:
+            response.success = False
+            response.message = "No odometry."
+            return response
+
+        tree = {'x': float(self.current_pose.position.x), 'y': float(self.current_pose.position.y)}
+        self.active_row[side].append(tree)
+        
+        response.success = True
+        response.message = f"Marked tree #{len(self.active_row[side])} on {side}."
+        return response
+
+    def mark_fence_callback(self, request, response):
+        if self.current_pose is None:
+            response.success = False
+            response.message = "No odometry."
+            return response
+
+        data = self.load_map()
+        if 'fence' not in data: data['fence'] = []
+        data['fence'].append({'x': float(self.current_pose.position.x), 'y': float(self.current_pose.position.y)})
+        self.save_map(data)
+        
+        response.success = True
+        response.message = f"Added fence point #{len(data['fence'])}."
+        return response
+
+    def load_map(self):
         if os.path.exists(self.map_file):
             with open(self.map_file, 'r') as f:
                 try:
-                    loaded = yaml.safe_load(f)
-                    if loaded and 'waypoints' in loaded:
-                        existing_data = loaded['waypoints']
+                    return yaml.safe_load(f) or {}
                 except yaml.YAMLError:
-                    pass
-        
-        existing_data.append(data)
-        
+                    return {}
+        return {}
+
+    def save_map(self, data):
         with open(self.map_file, 'w') as f:
-            yaml.dump({'waypoints': existing_data}, f)
-            
-        response.success = True
-        response.message = f"Saved {tag} #{len(existing_data)}: ({x:.2f}, {y:.2f})"
-        return response
+            yaml.dump(data, f)
+
+    def get_existing_rows(self):
+        data = self.load_map()
+        return data.get('rows', [])
 
 def main(args=None):
     rclpy.init(args=args)

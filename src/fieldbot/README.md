@@ -81,27 +81,21 @@ Full autonomous navigation stack with professional safety features.
 
 ### 🚜 Agricultural Intelligence
 
-**Row Surveyor Tool** (`scripts/row_surveyor.py`)
+**Vineyard Surveyor Tool** (`scripts/row_surveyor.py` & `scripts/survey_gui.py`)
 
-Record GPS waypoints while manually surveying agricultural fields.
+Record GPS waypoints while manually surveying agricultural fields using a professional Tkinter interface.
 
 **Services:**
-```bash
-# Mark row boundaries
-ros2 service call /mark_start std_srvs/srv/Trigger
-ros2 service call /mark_end std_srvs/srv/Trigger
+- `/start_row`: Initialize a new row sequence.
+- `/end_row`: Save the current row to YAML.
+- `/mark_tree_left` / `/mark_tree_right`: Record individual tree waypoints.
+- `/start_mission`: Trigger autonomous traversal of recorded maps.
 
-# Mark field perimeter
-ros2 service call /mark_fence std_srvs/srv/Trigger
-```
-
-**Output:** Generates `field_map.yaml` with semantic waypoints:
-```yaml
-waypoints:
-  - {x: 570747.95, y: 4829016.65, type: 'row_start'}
-  - {x: 570771.23, y: 4829018.42, type: 'row_end'}
-  - {x: 570750.11, y: 4829025.88, type: 'fence'}
-```
+**Dynamic Mapping:**
+- Supports **Multi-Map Management**.
+- Appends to existing YAML files or creates new ones via GUI filename entry.
+- Uses **Perspective Awareness** for seamless forward/return passes.
+- Enforces a **20cm Safety Margin** via LiDAR-based "Virtual Bumper".
 
 ---
 
@@ -190,24 +184,18 @@ ros2 topic pub /diff_drive_base_controller/cmd_vel_unstamped \
 
 ## 🗺️ Field Mapping Workflow
 
-Use the Row Surveyor to build reusable field maps:
-
-```bash
-# 1. Launch the system
+### 1. Launch the base system (Gazebo, EKF, Nav2)
 ros2 launch fieldbot fieldbot_launch.py
 
-# 2. Drive to start of row 1, then mark it
-ros2 service call /mark_start std_srvs/srv/Trigger
+### 2. Launch the mission stack (Surveyor, Navigator, GUI)
+ros2 launch fieldbot mission.launch.py
 
-# 3. Drive to end of row 1, then mark it
-ros2 service call /mark_end std_srvs/srv/Trigger
-
-# 4. Repeat for all rows and field boundaries
-ros2 service call /mark_fence std_srvs/srv/Trigger
-
-# 5. Waypoints are saved to: field_map.yaml
-cat field_map.yaml
-```
+### 3. Workflow
+1. Type a **Map Filename** in the GUI and click **"Apply Map"**.
+2. Click **"START NEW ROW"** and drive along your trees.
+3. Click **"TREE LEFT/RIGHT"** to mark waypoints.
+4. Click **"END ROW & SAVE"**.
+5. Click **"START AUTONOMOUS MISSION"** to watch the robot traverse!
 
 ---
 
@@ -236,11 +224,10 @@ Comprehensive technical deep-dives available in [`docs/`](./docs/):
 
 | Document | Description |
 |----------|-------------|
-| [`gps_imu_ekf_integration.md`](./docs/gps_imu_ekf_integration.md) | Complete dual-EKF setup, TF tree debugging, feedback loop fixes |
-| [`perception_and_mechanics.md`](./docs/perception_and_mechanics.md) | RGB-D camera integration, byte alignment fixes, URDF specifications |
+| [`system_architecture_detailed.md`](./docs/system_architecture_detailed.md) | **Exhaustive technical deep-dive of the current mission system** |
+| [`gps_imu_ekf_integration.md`](./docs/gps_imu_ekf_integration.md) | Dual-EKF setup, TF tree debugging, feedback loop fixes |
+| [`perception_and_mechanics.md`](./docs/perception_and_mechanics.md) | RGB-D camera integration, URDF specifications |
 | [`launch_architecture.md`](./docs/launch_architecture.md) | Event-driven deterministic startup with `RegisterEventHandler` |
-| [`advanced_roadmap.md`](./docs/advanced_roadmap.md) | Future AI perception and coverage path planning |
-| [`modifications_summary.md`](./docs/modifications_summary.md) | Technical record of all optimizations and polishes |
 
 ---
 
