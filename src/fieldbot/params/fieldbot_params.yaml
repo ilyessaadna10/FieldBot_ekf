@@ -88,7 +88,7 @@ controller_server:
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
       desired_linear_vel: 0.7
-      lookahead_dist: 0.6
+      lookahead_dist: 0.8
       min_lookahead_dist: 0.3
       max_lookahead_dist: 0.9
       lookahead_time: 1.5
@@ -109,8 +109,8 @@ controller_server:
       rotate_to_heading_min_angle: 0.785
       max_angular_accel: 5.0
       cost_scaling_dist: 0.3
-      cost_scaling_factor: 3.0
-      inflation_cost_scaling_factor: 3.0
+      cost_scaling_factor: 10.0
+      inflation_cost_scaling_factor: 10.0
         
 local_costmap:
   local_costmap:
@@ -226,7 +226,7 @@ planner_server:
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
       tolerance: 0.5
-      use_astar: false
+      use_astar: true
       allow_unknown: true
 
 smoother_server:
